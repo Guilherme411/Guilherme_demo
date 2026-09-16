@@ -21,6 +21,7 @@ public class TarefaRepository {
         System.out.println("[REPOSITORY] Buscando todas as tarefas em memória");
         return new ArrayList<>(banco.values());
     }
+
     public Optional<Tarefa> buscarPorId(Long id) {
         System.out.println("[REPOSITORY] Buscando tarefa por id: " + id);
         return Optional.ofNullable(banco.get(id));

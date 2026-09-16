@@ -1,39 +1,45 @@
-package br.ifrn.edu.demo.controler;
+package br.ifrn.edu.demo.controller;
 import br.edu.ifrn.labtarefas.model.Tarefa;
 import br.edu.ifrn.labtarefas.service.TarefaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
-@RestController
-@RequestMapping("/tarefas")
-public class TarefaController {
-    private final TarefaService service;
-    public TarefaController(TarefaService service) {
-        this.service = service;
+@Service
+public class TarefaService {
+    private final TarefaRepository repository;
+    public TarefaService(TarefaRepository repository) {
+        this.repository = repository;
     }
-    @PostMapping
-    public ResponseEntity<Tarefa> criar(@RequestBody Map<String, String>
-                                                corpo) {
-        System.out.println("[CONTROLLER] Requisição recebida: POST /tarefas");
-        Tarefa tarefa = service.criar(corpo.get("titulo"));
-        return ResponseEntity.ok(tarefa);
+    public Tarefa criar(String titulo) {
+        System.out.println("[SERVICE] Validando regra de negócio para: " +
+                titulo);
+        if (titulo == null || titulo.isBlank()) {
+            throw new IllegalArgumentException("O título da tarefa não pode ser vazio.");
+        }
+        return repository.salvar(titulo.trim());
     }
-    @GetMapping
-    public ResponseEntity<List<Tarefa>> listar() {
-        System.out.println("[CONTROLLER] Requisição recebida: GET /tarefas");
-        return ResponseEntity.ok(service.listar());
+    public List<Tarefa> listar() {
+        System.out.println("[SERVICE] Solicitando lista de tarefas ao repository");
+        return repository.listarTodas();
     }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Tarefa> buscar(@PathVariable Long id) {
-        System.out.println("[CONTROLLER] Requisição recebida: GET /tarefas/" + id);
-        return ResponseEntity.ok(service.buscarPorId(id));
+    public Tarefa buscarPorId(Long id) {
+        System.out.println("[SERVICE] Processando busca por id: " + id);
+        return repository.buscarPorId(id)
+                .orElseThrow(() -> new IllegalArgumentException("Tarefa não encontrada: " + id));
     }
 
-    @GetMapping("concluidos")
-    public ResponseEntity<TarefaService> listarconcluidos(){
-        System.out.println("[Controler] Requisição recebida: GET /tarefas/concluidas");
-        return ResponseEntity.ok(service.listarConcluidos());
+    public List<Tarefa> listarConcluidos(){
+        System.out.println("[SERVICE] Solicitando lista de tarefas concluidas");
+        List<Tarefa> tarefas = listar();
+        List<Tarefa> tarefasConcluidas=new ArrayList<Tarefa>();
+
+        for(Tarefa tarefa: tarefas){
+            if(tarefa.isConcluida()){
+                tarefasConcluidas.add(tarefa);
+            }
+        }
+        return tarefasConcluidas;
+
     }
 }
