@@ -1,4 +1,4 @@
-package br.edu.ifrn.taskapi.dto;
+package br.edu.ifrn.demo.dto;
 
 public record TaskResponseDTO(
         Long id,

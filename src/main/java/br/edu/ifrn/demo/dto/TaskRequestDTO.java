@@ -1,4 +1,5 @@
-package br.edu.ifrn.taskapi.dto;
+package br.edu.ifrn.demo.dto;
+
 import java.time.LocalDate;
 public record TaskRequestDTO(
         String titulo,

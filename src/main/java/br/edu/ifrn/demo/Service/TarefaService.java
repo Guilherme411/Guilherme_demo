@@ -1,24 +1,45 @@
-package br.ifrn.edu.demo.controller;
-import br.edu.ifrn.labtarefas.model.Tarefa;
-import br.edu.ifrn.labtarefas.service.TarefaService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+package br.edu.ifrn.demo.Service;
+
+import br.edu.ifrn.demo.dto.TaskRequestDTO;
+import br.edu.ifrn.demo.dto.TaskResponseDTO;
+import br.edu.ifrn.demo.model.Tarefa;
+import br.edu.ifrn.demo.repository.TarefaRepository;
+import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicLong;
+
 @Service
 public class TarefaService {
     private final TarefaRepository repository;
+    private final AtomicLong sequencia = new AtomicLong();
+
     public TarefaService(TarefaRepository repository) {
         this.repository = repository;
     }
-    public Tarefa criar(String titulo) {
+
+
+    public TaskResponseDTO criar(TaskRequestDTO dto) {
+        String titulo=dto.titulo();
+        Tarefa tarefa = new Tarefa(sequencia.incrementAndGet(),dto.titulo(),dto.descricao(),null);
         System.out.println("[SERVICE] Validando regra de negócio para: " +
                 titulo);
         if (titulo == null || titulo.isBlank()) {
             throw new IllegalArgumentException("O título da tarefa não pode ser vazio.");
         }
-        return repository.salvar(titulo.trim());
+        Tarefa salva= repository.salvar(tarefa);
+        return toResponseDTO(salva);
     }
+
+    private TaskResponseDTO toResponseDTO(Tarefa tarefa) {
+        return new TaskResponseDTO(
+                tarefa.getId(),
+                tarefa.getTitulo(),
+                tarefa.isConcluida(),
+                tarefa.getPrioridade()
+        );
+    }
+
     public List<Tarefa> listar() {
         System.out.println("[SERVICE] Solicitando lista de tarefas ao repository");
         return repository.listarTodas();
